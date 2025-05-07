@@ -37,7 +37,7 @@ define initialize()
   set initialHorizontalMovePixels to 5                             // Move the hitbox this many pixels horizontally when 
                                                                    // left or right key is pressed
                                                                    // this value can be modified later in the code to speed 
-																                                   // it up or slow it down
+                                                                   // it up or slow it down
                                                                    // but this is the base amount, also known as moveSpeed
   set initialVerticalJumpPixels to 10                              // Move the hitbox this many pixels vertically when up 
                                                                    // key is pressed
@@ -194,13 +194,13 @@ define resolveFloorAndCeilingCollisions()
     {
       set isStandingOnTheGround to true
       set hasBumpedIntoTheCeiling to false
-	  set hasTouchedGreen to false                                   // Reset the variable for reuse in the next frame
+      set hasTouchedGreen to false                                 // Reset the variable for reuse in the next frame
     }
     if (verticalPixelsToMoveThisFrame > 0 and hasTouchedGrey = true) // Hitbox hit its head
     {
       set hasBumpedIntoTheCeiling to true
       set isStandingOnTheGround to false
-	  set hasTouchedGrey to false                                    // Reset the variable for reuse in the next frame
+      set hasTouchedGrey to false                                  // Reset the variable for reuse in the next frame
     }
     set verticalPixelsToMoveThisFrame to 0                         // Reset this before reusing for the next frame
   }
