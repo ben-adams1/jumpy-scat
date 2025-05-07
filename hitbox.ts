@@ -67,7 +67,7 @@ define initialize()
   set hasTouchedGreen to false                                     // Used for detecting ground
   set hasTouchedGrey to false                                      // Used for detecting ceilings
   set previousFrameYPosition to y position of Hitbox               // Basically starting this out at the origin
-  set Probe [ghost] to (100)                                       // Hide the Probe that we use for 
+  broadcast ghostProbe                                             // Hide the Probe that we use for 
                                                                    // detecting wall collisions since it's not part of 
                                                                    // our artwork
   set Hitbox [ghost] to (100)                                      // Also hide the hitbox
