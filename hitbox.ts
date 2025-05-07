@@ -129,7 +129,7 @@ define savePreviousPosition()
 ////////////////////////////////////////////////////////////////////////////////
 define moveVerticallyOneStep()  
 {  
-  change (y position of Hitbox) by verticalPixelsToMoveThisFrame   // Move the hitbox up or down
+  change y by verticalPixelsToMoveThisFrame                        // Move the hitbox up or down
 }  
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -269,7 +269,7 @@ define updateJumpAndFallFlags()
 ////////////////////////////////////////////////////////////////////////////////
 define moveHorizontallyOneStep()  
 {  
-  change (x position of Hitbox) by horizontalPixelsToMoveThisFrame // Move the hitbox left or right
+  change x by horizontalPixelsToMoveThisFrame                      // Move the hitbox left or right
 }  
 
 ////////////////////////////////////////////////////////////////////////////////
