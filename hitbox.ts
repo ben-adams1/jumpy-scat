@@ -66,7 +66,7 @@ define initialize()
                                                                    // that it goes through the ground before we can catch it
   set hasTouchedGreen to false                                     // Used for detecting ground
   set hasTouchedGrey to false                                      // Used for detecting ceilings
-  set previousFrameYPosition to y position of Hitbox               // Basically starting this out at the origin
+  set previousFrameYPosition to y                                  // Basically starting this out at the origin
   broadcast ghostProbe                                             // Hide the Probe that we use for 
                                                                    // detecting wall collisions since it's not part of 
                                                                    // our artwork
@@ -118,9 +118,9 @@ define readAndProcessPlayerInput()
 ////////////////////////////////////////////////////////////////////////////////
 define savePreviousPosition()  
 {  
-  set savedX to (x position of Hitbox)                             // Save a backup of where the hitbox was before on the  
+  set savedX to x                                                  // Save a backup of where the hitbox was before on the  
                                                                    // x axis
-  set savedY to (y position of Hitbox)                             // Save a backup of where the hitbox was before on the 
+  set savedY to y                                                  // Save a backup of where the hitbox was before on the 
                                                                    // y axis
 } 
 
@@ -143,11 +143,11 @@ define evaluateFloorAndCeilingCollisions()
   
   // CEILING
   // Determine where to put the Probe on top of the hitbox and save the results in variables that we will use in a bit
-  set probeY to ((y position of Hitbox) + round(hitboxHeight ÷ 2) + 1) // This puts the probe sprite just above the top
+  set probeY to (y + round(hitboxHeight ÷ 2) + 1)                  // This puts the probe sprite just above the top
                                                                    // edge of the hitbox
                                                                    // (Half the distance from the center of the hitbox)
     
-  set probeX to ((x position of Hitbox) - (round(hitboxWidth ÷ 2))) // Left side
+  set probeX to (x - (round(hitboxWidth ÷ 2)))                     // Left side
   
   // Top-left
   // Now that we know where to put the probe, execute the probe movement
@@ -164,7 +164,7 @@ define evaluateFloorAndCeilingCollisions()
   
   // FLOOR or GROUND
   // Determine where to put the probe below the hitbox and save the results in variables that we will use in a bit
-  change probeY by - hitboxHeight                                  // This puts the probe sprite just below the bottom
+  change probeY by (0 - hitboxHeight)                              // This puts the probe sprite just below the bottom
                                                                    // edge of the hitbox
                                                                    // (Half the distance from the center of the hitbox)
    
@@ -189,7 +189,7 @@ define resolveFloorAndCeilingCollisions()
   // If the probe touched the ground or ceiling, undo the vertical movement
   if (hasTouchedGrey = true or hasTouchedGreen = true)             // Probe touched the ground or ceiling
   {
-    set (y position of Hitbox) to savedY                           // Revert the hitbox to its previous vertical position
+    set y to savedY                                                // Revert the hitbox to its previous vertical position
     if (verticalPixelsToMoveThisFrame < 0 and hasTouchedGreen = true) // Hitbox landed
     {
       set isStandingOnTheGround to true
@@ -232,7 +232,7 @@ define applyGravityToVerticalSpeed()
 define updateJumpAndFallFlags()
 {
   // Determine whether hitbox is rising
-  if ((y position of Hitbox) > previousFrameYPosition)             // Hitbox is higher than before
+  if (y > previousFrameYPosition)                                  // Hitbox is higher than before
   {
     set isRising to true
     set isFalling to false
@@ -241,7 +241,7 @@ define updateJumpAndFallFlags()
   else                                                             // Hitbox is not higher than before
   {
     // Determine whether hitbox is falling or stationary
-    if ((y position of Hitbox) < previousFrameYPosition)           // Hitbox is lower than before
+    if (y < previousFrameYPosition)                                // Hitbox is lower than before
     {
       set isRising to false
       set isFalling to true
@@ -261,7 +261,7 @@ define updateJumpAndFallFlags()
       }
     }
   }
-  set previousFrameYPosition to (y position of Hitbox)             // For use in the next frame
+  set previousFrameYPosition to y                                  // For use in the next frame
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -281,7 +281,7 @@ define evaluateAndResolveWallCollisions()
   if (not(horizontalPixelsToMoveThisFrame = 0))                    // Hitbox is trying to move horizontally 
   {
     // Determine where to put the probe on the X axis and save the results in variables that we will execute on in a bit
-    set probeX to ((x position of Hitbox) - round(hitboxWidth ÷ 2) - 1) // This puts the probe sprite just outside the left edge
+    set probeX to (x - round(hitboxWidth ÷ 2) - 1)                 // This puts the probe sprite just outside the left edge
                                                                    // of the hitbox
                                                                    // (Half the distance from the center of the hitbox)
                                                                    // This works if the hitbox is trying to go to
@@ -292,7 +292,7 @@ define evaluateAndResolveWallCollisions()
     }
 
     // Determine where to put the probe on the bottom of the hitbox
-    set probeY to ((y position of Hitbox) - round(hitboxHeight ÷ 2)) // This will put the probe at the bottom of the hitbox
+    set probeY to (y - round(hitboxHeight ÷ 2))                    // This will put the probe at the bottom of the hitbox
 
     // Now that we know where to put the probe, execute the probe movement
     broadcast moveProbe and wait                                   // Move the probe sprite to where we want it
@@ -311,9 +311,9 @@ define evaluateAndResolveWallCollisions()
     broadcast moveProbe and wait                                   // Move the probe sprite to where we want it
     
 	// Determine whether the probe is touching a wall and if so, revert the action
-	if (hasTouchedBrown = true)                                      // The probe is in a wall
+	if (hasTouchedBrown = true)                                // The probe is in a wall
     {
-      set x of Hitbox to savedX                                    // Revert the hitbox to its previous horizontal position
+      set x to savedX                                              // Revert the hitbox to its previous horizontal position
       set horizontalPixelsToMoveThisFrame to 0                     // Reset this variable to 0 for use in the next frame
     }	
   }
@@ -325,11 +325,13 @@ define evaluateAndResolveWallCollisions()
 define renderCharacter()   
 {  
   
-  set Probe [ghost] to (100)
+  broadcast ghostProbe                                             // Make sure the the probe is still hidden
 	
-  // Sync position to the hitbox  
-  set x position to (x position of Hitbox)
-  set y position to (y position of Hitbox)
+  // Sync cat sprite position to the hitbox  
+  set catX to x                                                    // Update the x value for the cat
+  set catY to Y                                                    // Update the y value for the cat
+  broadcast moveCat                                                // Call the cat sprite code to actually move the cat to these
+                                                                   // coordinates
 
   // Flip sprite to face movement direction and apply walking animation
   if (horizontalPixelsToMoveThisFrame > 0)
