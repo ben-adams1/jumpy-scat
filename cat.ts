@@ -8,18 +8,29 @@ When I receive (updateCostume)
   if (horizontalPixelsToMoveThisFrame > 0)
   {
     point in direction (90)                                        // Face right
-    next costume
+    run()
   }
   else if (horizontalPixelsToMoveThisFrame < 0)  
   {
     point in direction (-90)                                       // Face left
-    next costume
+    run()
   }
   else
   {
     switch costume to [idle]
   }
 
+define run()
+	{ 
+    if (costume (number) = 1)
+    { 
+      switch costume to (costume2)
+    }
+    else
+    { 
+      switch costume to (costume1)
+    }
+  }
 // FUTURE
   // Animate jumping
   if (isRising = true)
