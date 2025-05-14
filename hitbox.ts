@@ -60,11 +60,12 @@ define initialize()
   set (hasTouchedCeiling) to false                                 // Used for detecting ceilings
   set (hasTouchedWall) to false                                    // Used for detecting walls
   set (hasTouchedDanger) to false                                  // Used for detecting spikes, lava, etc.
-  set (previousFrameYPosition) to y                                // Basically starting this out at the origin
+  set (previousFrameXPosition) to (x)                              // Basically starting this out at the origin
+  set (previousFrameYPosition) to (y)                              // Basically starting this out at the origin
   broadcast (ghostProbe)                                           // Hide the probe that we use for detecting wall collisions 
                                                                    // since it's not part of our artwork
   set (ghost) to (100)                                             // Hide the hitbox
-  go to (x==spawnX, y==spawnY)                                     // Make the hitbox appear at the spawn origin
+  go to ((x) == (spawnX), (y) == (spawnY))                         // Make the hitbox appear at the spawn origin
 }
 
 define readAndProcessPlayerInput()
