@@ -147,7 +147,7 @@ define evaluateFloorAndCeilingCollisions()
   // CEILING
   // Determine where to put the Probe on top of the hitbox and save the results in variables that we will use in a bit
   set probeY to (y + round(hitboxHeight ÷ 2) + 1)                  // This puts the probe sprite just above the top
-                                                                   // edge of the hitbox
+                                                                   // left edge of the hitbox
                                                                    // (Half the distance from the center of the hitbox)
     
   set probeX to (x - (round(hitboxWidth ÷ 2)))                     // Left side
@@ -177,8 +177,8 @@ define evaluateFloorAndCeilingCollisions()
   
   if (hasTouchedGround = false)                                    // Hitbox hasn't hit the floor yet, so check the other corner
   {
-    // Bottom-left
-    change probeX by - hitboxWidth
+    // Bottom-right
+    change probeX by + hitboxWidth
     broadcast moveProbe and wait                                   // Move the probe to where we want it
     broadcast probeDown and wait                                   // Probe for a floor
   }
