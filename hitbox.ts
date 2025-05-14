@@ -278,8 +278,6 @@ define renderCharacter()
   broadcast (ghostProbe)                                           // Make sure the the probe is still hidden
 	
   // Sync cat sprite position to the hitbox  
-  set (catX) to (x)                                                // Update the x value for the cat
-  set (catY) to (y)                                                // Update the y value for the cat
   broadcast (moveCat)                                              // Call the cat sprite code to actually move the cat to these coordinates
 
 
