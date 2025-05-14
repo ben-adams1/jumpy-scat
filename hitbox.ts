@@ -154,14 +154,14 @@ define evaluateFloorAndCeilingCollisions()
   // Top-left
   // Now that we know where to put the probe, execute the probe movement
   broadcast (moveProbe) and wait                                   // Move the probe to where we want it
-  broadcast (probeCeiling) and wait                                // Probe for a ceiling
+  broadcast (probeUp) and wait                                     // Probe for a ceiling
   
   if (hasTouchedCeiling = false)                                   // Hitbox hasn't hit the ceiling yet, so check the other corner
   {
     // Top right
     change probeX by hitboxWidth
     broadcast moveProbe and wait                                   // Move the probe to where we want it
-    broadcast probeCeiling and wait                                // Probe for a ceiling
+    broadcast probeUp and wait                                     // Probe for a ceiling
   }
   
   // FLOOR or GROUND
@@ -172,14 +172,14 @@ define evaluateFloorAndCeilingCollisions()
    
   // Bottom-right
   broadcast moveProbe and wait                                     // Move the probe to where we want it
-  broadcast probeFloor and wait                                    // Probe for a floor
+  broadcast probeDown and wait                                     // Probe for ground
   
   if (hasTouchedGround = false)                                    // Hitbox hasn't hit the floor yet, so check the other corner
   {
     // Bottom-left
     change probeX by - hitboxWidth
     broadcast moveProbe and wait                                   // Move the probe to where we want it
-    broadcast probeFloor and wait                                  // Probe for a floor
+    broadcast probeDown and wait                                   // Probe for a floor
   }
 }
 
@@ -298,7 +298,7 @@ define evaluateAndResolveWallCollisions()
 
     // Now that we know where to put the probe, execute the probe movement
     broadcast moveProbe and wait                                   // Move the probe sprite to where we want it
-    broadcast probeWall and wait                                   // Determine whether the probe is touching a wall
+    broadcast probeSideways and wait                               // Determine whether the probe is touching a wall
 	// Determine whether the probe is touching a wall and if so, revert the action
 	if (hasTouchedWall = true)                                 // The probe is in a wall
     {
