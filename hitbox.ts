@@ -65,8 +65,9 @@ define initialize()
   set verticalPixelsToMoveThisFrame to 0                           // Initialize this as 0 since it just started  
   set maxPixelsToFallPerFrame to 10                                // Keeps gravity from accelerating the hitbox so fast 
                                                                    // that it goes through the ground before we can catch it
-  set hasTouchedGreen to false                                     // Used for detecting ground
-  set hasTouchedGrey to false                                      // Used for detecting ceilings
+  set hasTouchedGround to false                                    // Used for detecting ground
+  set hasTouchedCeiling to false                                   // Used for detecting ceilings
+  set hasTouchedWall to false                                      // Used for detecting walls
   set previousFrameYPosition to y                                  // Basically starting this out at the origin
   broadcast ghostProbe                                             // Hide the Probe that we use for 
                                                                    // detecting wall collisions since it's not part of 
@@ -139,8 +140,8 @@ define moveVerticallyOneStep()
 define evaluateFloorAndCeilingCollisions()
 {
   // Determine where to put the probe on the X axis (in case we need it)
-  set hasTouchedGrey to false                                      // Reset this from the previous frame
-  set hasTouchedGreen to false                                     // Reset this from the previous frame
+  set hasTouchedCeiling to false                                   // Reset this from the previous frame
+  set hasTouchedGround to false                                    // Reset this from the previous frame
   
   // CEILING
   // Determine where to put the Probe on top of the hitbox and save the results in variables that we will use in a bit
@@ -155,7 +156,7 @@ define evaluateFloorAndCeilingCollisions()
   broadcast (moveProbe) and wait                                   // Move the probe to where we want it
   broadcast (probeCeiling) and wait                                // Probe for a ceiling
   
-  if (hasTouchedGrey = false) // Hitbox hasn't hit the ceiling yet, so check the other corner
+  if (hasTouchedCeiling = false)                                   // Hitbox hasn't hit the ceiling yet, so check the other corner
   {
     // Top right
     change probeX by hitboxWidth
@@ -173,7 +174,7 @@ define evaluateFloorAndCeilingCollisions()
   broadcast moveProbe and wait                                     // Move the probe to where we want it
   broadcast probeFloor and wait                                    // Probe for a floor
   
-  if (hasTouchedGreen = false)                                     // Hitbox hasn't hit the floor yet, so check the other corner
+  if (hasTouchedGround = false)                                    // Hitbox hasn't hit the floor yet, so check the other corner
   {
     // Bottom-left
     change probeX by - hitboxWidth
@@ -188,20 +189,20 @@ define evaluateFloorAndCeilingCollisions()
 define resolveFloorAndCeilingCollisions()
 {
   // If the probe touched the ground or ceiling, undo the vertical movement
-  if (hasTouchedGrey = true or hasTouchedGreen = true)             // Probe touched the ground or ceiling
+  if (hasTouchedCeiling = true or hasTouchedGround = true)          // Probe touched the ground or ceiling
   {
-    set y to savedY                                                // Revert the hitbox to its previous vertical position
-    if (verticalPixelsToMoveThisFrame < 0 and hasTouchedGreen = true) // Hitbox landed
+    set y to savedY                                                 // Revert the hitbox to its previous vertical position
+    if (verticalPixelsToMoveThisFrame < 0 and hasTouchedGround = true) // Hitbox landed
     {
       set isStandingOnTheGround to true
       set hasBumpedIntoTheCeiling to false
-      set hasTouchedGreen to false                                 // Reset the variable for reuse in the next frame
+      set hasTouchedGround to false                                 // Reset the variable for reuse in the next frame
     }
-    if (verticalPixelsToMoveThisFrame > 0 and hasTouchedGrey = true) // Hitbox hit its head
+    if (verticalPixelsToMoveThisFrame > 0 and hasTouchedCeiling = true) // Hitbox hit its head
     {
       set hasBumpedIntoTheCeiling to true
       set isStandingOnTheGround to false
-      set hasTouchedGrey to false                                  // Reset the variable for reuse in the next frame
+      set hasTouchedCeiling to false                               // Reset the variable for reuse in the next frame
     }
     set verticalPixelsToMoveThisFrame to 0                         // Reset this before reusing for the next frame
   }
@@ -297,9 +298,9 @@ define evaluateAndResolveWallCollisions()
 
     // Now that we know where to put the probe, execute the probe movement
     broadcast moveProbe and wait                                   // Move the probe sprite to where we want it
-    
+    broadcast probeWall and wait                                   // Determine whether the probe is touching a wall
 	// Determine whether the probe is touching a wall and if so, revert the action
-	if (hasTouchedBrown = true)                                      // The probe is in a wall
+	if (hasTouchedWall = true)                                 // The probe is in a wall
     {
       set x of Hitbox to savedX                                    // Revert the hitbox to its previous horizontal position
       set horizontalPixelsToMoveThisFrame to 0                     // Reset this variable to 0 for use in the next frame
@@ -312,7 +313,7 @@ define evaluateAndResolveWallCollisions()
     broadcast moveProbe and wait                                   // Move the probe sprite to where we want it
     
 	// Determine whether the probe is touching a wall and if so, revert the action
-	if (hasTouchedBrown = true)                                // The probe is in a wall
+	if (hasTouchedWall = true)                                 // The probe is in a wall
     {
       set x to savedX                                              // Revert the hitbox to its previous horizontal position
       set horizontalPixelsToMoveThisFrame to 0                     // Reset this variable to 0 for use in the next frame
@@ -330,7 +331,7 @@ define renderCharacter()
 	
   // Sync cat sprite position to the hitbox  
   set catX to x                                                    // Update the x value for the cat
-  set catY to Y                                                    // Update the y value for the cat
+  set catY to y                                                    // Update the y value for the cat
   broadcast moveCat                                                // Call the cat sprite code to actually move the cat to these
                                                                    // coordinates
 
