@@ -1,6 +1,6 @@
 when I receive (moveCat)
 {
-  go to ((x) == (catX), (y) == (catY))
+  go to (hitbox)
 }
 
 when I receive (updateCostume)
