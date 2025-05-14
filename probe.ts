@@ -1,61 +1,46 @@
-////////////////////////////////////////////////////////////////////////////////
-// PROCEDURE: ghostProbe
-////////////////////////////////////////////////////////////////////////////////
-
-when I receive ghostProbe
+when I receive (ghostProbe)
   {
-    set [ghost] to (100)                                       // Hide the probe
+    set (ghost) to (100)                                       // Hide the probe
   }
 
-////////////////////////////////////////////////////////////////////////////////
-// PROCEDURE: moveProbe
-////////////////////////////////////////////////////////////////////////////////
 when I receive (moveProbe)
 {
-  go to (x:probeX, y:probeY)
+  go to ((x) == (probeX), (y) == (probeY))
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// PROCEDURE: probeCeiling
-////////////////////////////////////////////////////////////////////////////////
 when I receive (probeUp)
 {
-  if (touching [level1Ceiling])
+  if (touching [level1Ceiling] == true)
   {
-    set hasTouchedCeiling to true
+    set (hasTouchedCeiling) to true
   }
-   if (touching [danger])
+   if (touching [danger] == true)
   {
-    set hasTouchedDanger to true // or play the death animation or whatever you want to do when someone dies
+    set (hasTouchedDanger) to true
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// PROCEDURE: probeFloor
-////////////////////////////////////////////////////////////////////////////////
 when I receive (probeDown)
 {
-  if (touching [level1ground]) 
+  if (touching [level1ground] == true) 
   {
-    set hasTouchedGround to true
+    set (hasTouchedGround) to true
   }
-   if (touching [danger])
+   if (touching [danger] == true)
   {
-    set hasTouchedDanger to true // or play the death animation or whatever you want to do when someone dies
+    set (hasTouchedDanger) to true
   }
 }  
-////////////////////////////////////////////////////////////////////////////////
-// PROCEDURE: probeWall
-////////////////////////////////////////////////////////////////////////////////
+
 when I receive (probeSideways)
 {
-  if (touching [level1wall]) 
+  if (touching [level1wall] ==  true) 
   {
-    set hasTouchedWall to true
+    set (hasTouchedWall) to true
   }
   
-  if (touching [danger])
+  if (touching [danger] == true)
   {
-    set hasTouchedDanger to true // or play the death animation or whatever you want to do when someone dies
+    set (hasTouchedDanger) to true
   }
 }
