@@ -74,7 +74,7 @@ define initialize()
                                                                    // detecting wall collisions since it's not part of 
                                                                    // our artwork
   set Hitbox [ghost] to (100)                                      // Also hide the hitbox
-  go to Hitbox x spawnX y spawnY                                   // Make the hitbox appear at the spawn origin
+  go to x:spawnX y:spawnY                                   // Make the hitbox appear at the spawn origin
 }
 
 ////////////////////////////////////////////////////////////////////////////////
