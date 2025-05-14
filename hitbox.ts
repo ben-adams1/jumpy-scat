@@ -169,20 +169,24 @@ define resolveFloorAndCeilingCollisions()
 }
 
 define applyGravityToVerticalSpeed()  
-{  
-  change (verticalPixelsToMoveThisFrame) by ((0) - (pixelsToFallEachFrame)) // In preparation for the next frame,
-                                                                   // update the distance to move the hitbox vertically 
-                                                                   // next time, either slowing a jump, or increasing
-                                                                   // fall speed
-  if ((verticalPixelsToMoveThisFrame) > (maxPixelsToFallPerFrame)) // Hitbox is falling too fast
+{
+  if ((isStandingOnTheGround) == false)
   {
-    set (verticalPixelsToMoveThisFrame) to (maxPixelsToFallPerFrame) // Cap the fall speed
+    change (verticalPixelsToMoveThisFrame) by (0 - (pixelsToFallEachFrame)) // In preparation for the next frame,
+                                                                     // update the distance to move the hitbox vertically 
+                                                                     // next time, either slowing a jump, or increasing
+                                                                     // fall speed
+    if ((verticalPixelsToMoveThisFrame) < (0 - (maxPixelsToFallPerFrame))) // Hitbox is falling too fast
+    {
+      set (verticalPixelsToMoveThisFrame) to (0 - (maxPixelsToFallPerFrame)) // Cap the fall speed
+    }
+  }
+  else
+  {
+    set (verticalPixelsToMoveThisFrame) to 0                       // Already on the ground
   }
 }  
 
-////////////////////////////////////////////////////////////////////////////////
-// PROCEDURE: updateJumpAndFallFlags
-////////////////////////////////////////////////////////////////////////////////
 define updateJumpAndFallFlags()
 {
   // Determine whether hitbox is rising
@@ -218,19 +222,14 @@ define updateJumpAndFallFlags()
   set (previousFrameYPosition) to (y)                              // For use in the next frame
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// PROCEDURE: moveHorizontallyOneStep
-////////////////////////////////////////////////////////////////////////////////
 define moveHorizontallyOneStep()  
 {  
   change (x) by (horizontalPixelsToMoveThisFrame)                  // Move the hitbox left or right
 }  
 
-////////////////////////////////////////////////////////////////////////////////
-// PROCEDURE: evaluateAndResolveWallCollisions
-////////////////////////////////////////////////////////////////////////////////
 define evaluateAndResolveWallCollisions()  
 {
+  set (hasTouchedWall) to false                                    // Make sure this is reset from the previous frame
   // First, determine whether the hitbox is trying to move horizontally
   if (not((horizontalPixelsToMoveThisFrame) == 0))                 // Hitbox is trying to move horizontally 
   {
