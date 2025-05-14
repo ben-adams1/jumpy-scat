@@ -1,48 +1,48 @@
 when I receive (moveCat)
 {
-  go to x:catX, y:catY
+  go to ((x) == (catX), (y) == (catY))
 }
 
-When I receive (updateCostume)
+when I receive (updateCostume)
 {  
-  if (horizontalPixelsToMoveThisFrame > 0)
+  if ((horizontalPixelsToMoveThisFrame) > 0)
   {
     point in direction (90)                                        // Face right
-    run()
+    animateRunning()
   }
-  else if (horizontalPixelsToMoveThisFrame < 0)  
+  else if ((horizontalPixelsToMoveThisFrame) < 0)  
   {
     point in direction (-90)                                       // Face left
-    run()
+    animateRunning()
   }
   else
   {
-    switch costume to [idle]
+    switch costume to (costume3)
   }
 
-define run()
-	{ 
-    if (costume (number) = 1)
-    { 
-      switch costume to (costume2)
-    }
-    else
-    { 
-      switch costume to (costume1)
-    }
+define animateRunning()
+  { 
+  if (costume (number) = 1)
+  { 
+    switch costume to (costume2)
   }
-// FUTURE
-  // Animate jumping
+  else
+  { 
+    switch costume to (costume1)
+  }
+}
+
+define animateJumping() // Future
   if (isRising = true)
   {
-	switch costume to [jumping]
-  }
-  if (isFalling = true)
-  {
-    switch costume to [falling]
+    switch costume to (costume4)
   }
   if (isAtPeakOfJump = true)
   {
-    switch costume to [apex]
+    switch costume to (costume5)
   }  
+  if (isFalling = true)
+  {
+    switch costume to (costume6)
+  }
 }
