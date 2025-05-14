@@ -18,36 +18,44 @@ when I receive (moveProbe)
 ////////////////////////////////////////////////////////////////////////////////
 // PROCEDURE: probeCeiling
 ////////////////////////////////////////////////////////////////////////////////
-when I receive (probeCeiling)
+when I receive (probeUp)
 {
-  if (touching color [ceiling color])
+  if (touching [level1Ceiling])
   {
-    set hasTouchedGrey to true
+    set hasTouchedCeiling to true
+  }
+   if (touching [danger])
+  {
+    set hasTouchedDanger to true // or play the death animation or whatever you want to do when someone dies
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // PROCEDURE: probeFloor
 ////////////////////////////////////////////////////////////////////////////////
-when I receive (probeFloor)
+when I receive (probeDown)
 {
-  if (touching color [ground color]) 
+  if (touching [level1ground]) 
   {
-    set hasTouchedGreen to true
+    set hasTouchedGround to true
+  }
+   if (touching [danger])
+  {
+    set hasTouchedDanger to true // or play the death animation or whatever you want to do when someone dies
   }
 }  
 ////////////////////////////////////////////////////////////////////////////////
 // PROCEDURE: probeWall
 ////////////////////////////////////////////////////////////////////////////////
-when I receive (probeWall)
+when I receive (probeSideways)
 {
-  if (touching color [wall color]) 
+  if (touching [level1wall]) 
   {
-    set hasTouchedBrown to true
+    set hasTouchedWall to true
   }
   
-  if (touching [spiky color])
+  if (touching [danger])
   {
-    set hasTouchedSpike to true // or play the death animation or whatever you want to do when someone dies
+    set hasTouchedDanger to true // or play the death animation or whatever you want to do when someone dies
   }
 }
