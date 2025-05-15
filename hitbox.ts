@@ -1,16 +1,15 @@
 when (Green_Flag == clicked)
 {
   initialize()
-  applyGravityToVerticalSpeed()
   forever  
   {
     // Step-Check-Revert
     readAndProcessPlayerInput()
     savePreviousPosition()
+    applyGravityToVerticalSpeed()
     moveVerticallyOneStep()
     evaluateFloorAndCeilingCollisions()
     resolveFloorAndCeilingCollisions()
-    applyGravityToVerticalSpeed()
     updateJumpAndFallFlags()
     moveHorizontallyOneStep()
     evaluateAndResolveWallCollisions()
