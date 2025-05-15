@@ -5,10 +5,8 @@ when (Green_Flag == clicked)
   {
     // Step-Check-Revert
     readAndProcessPlayerInput()
-    savePreviousPosition()
     applyGravityToVerticalSpeed()
-    moveVerticallyOneStep()
-    evaluateFloorAndCeilingCollisions()
+    moveAndEvaluateFloorAndCeilingCollisions()
     resolveFloorAndCeilingCollisions()
     updateJumpAndFallFlags()
     moveHorizontallyOneStep()
@@ -108,71 +106,6 @@ define readAndProcessPlayerInput()
   }
 }
 
-define savePreviousPosition()  
-{  
-  set (savedX) to (x position)                                     // Save a backup of where the hitbox was before on the x axis
-  set (savedY) to (y position)                                     // Save a backup of where the hitbox was before on the y axis
-} 
-
-define moveVerticallyOneStep()  
-{  
-  change (y) by (verticalPixelsToMoveThisFrame)                    // Move the hitbox up or down
-}  
-
-define evaluateFloorAndCeilingCollisions()
-{
-  // Determine where to put the probe on the X axis (in case we need it)
-  set (hasTouchedCeiling) to false                                 // Reset this from the previous frame
-  set (hasTouchedGround) to false                                  // Reset this from the previous frame
-  
-  // TOP LEFT
-  set (probeY) to ((y position) + round(hitboxHeight / 2) + 1)                // Determines the location 1 pixel outside the top edge of the hitbox
-  set (probeX) to ((x position) - (round(hitboxWidth / 2)) - 1)               // Determines the location 1 pixel outside the left side of the hitbox 
-  broadcast (moveProbe) and wait                                   // Move the probe to where we want it
-  broadcast (probeUp) and wait                                     // Probe for a ceiling
-  
-  // TOP RIGHT
-  change (probeX) by (hitboxWidth + 2)                             // Determines the location 1 pixel outside the right edge of the hitbox
-  broadcast (moveProbe) and wait                                   // Move the probe to where we want it
-  broadcast (probeUp) and wait                                     // Probe for a ceiling
-  
-  // BOTTOM RIGHT
-  change (probeY) by (-2 - hitboxHeight)                           // Determines the location 1 pixel outside the bottom edge of the hitbox
-  broadcast (moveProbe) and wait                                   // Move the probe to where we want it
-  broadcast (probeDown) and wait                                   // Probe for ground
-  
-  // BOTTOM LEFT
-  change (probeX) by (-2 - hitboxWidth)                            // Determines the location 1 pixel outside the left edge of the hitbox
-  broadcast (moveProbe) and wait                                   // Move the probe to where we want it
-  broadcast (probeDown) and wait                                   // Probe for a floor
-}
-
-define resolveFloorAndCeilingCollisions()
-{
-  // If the probe touched the ground or ceiling, undo the vertical movement
-  if (((hasTouchedCeiling) == true) or ((hasTouchedGround) == true)) // Probe touched the ground or ceiling
-  {
-    set y to (savedY)                                              // Revert the hitbox to its previous vertical position
-    if (((verticalPixelsToMoveThisFrame) < 0) and ((hasTouchedGround) == true)) // Hitbox landed
-    {
-      set (isStandingOnTheGround) to true                       
-      set (hasBumpedIntoTheCeiling) to false                       // Reset the variable for reuse in the next frame
-      set (hasTouchedGround) to false                              // Reset the variable for reuse in the next frame
-    }
-    if (verticalPixelsToMoveThisFrame > 0 and (hasTouchedCeiling) == true) // Hitbox hit its head
-    {
-      set (hasBumpedIntoTheCeiling) to true
-      set (hasTouchedCeiling) to false                             // Reset the variable for reuse in the next frame
-    }
-    set (verticalPixelsToMoveThisFrame) to 0                       // Reset this before reusing for the next frame
-  }
-  else                                                             // Hitbox has not landed nor bumped its head
-  {
-    set (isStandingOnTheGround) to false
-    set (hasBumpedIntoTheCeiling) to false
-  }
-}
-
 define applyGravityToVerticalSpeed()  
 {
   if ((isStandingOnTheGround) == false)
@@ -191,6 +124,94 @@ define applyGravityToVerticalSpeed()
     set (verticalPixelsToMoveThisFrame) to 0                       // Already on the ground
   }
 }  
+
+define moveAndEvaluateFloorAndCeilingCollisions()
+{
+  // Determine where to put the probe on the X axis (in case we need it)
+  set (hasTouchedCeiling) to false                                 // Reset this from the previous frame
+  set (hasTouchedGround) to false                                  // Reset this from the previous frame
+  
+  // Set our steps to be positive (jumping) or negative (falling)
+  if ((verticalPixelsToMoveThisFrame) > 0)                         // We're jumping
+  {
+    set (oneStep) to 1                                             // This will let us move upward one pixel at a time
+  }
+  else                                                             // We're not jumping
+  {
+    if ((verticalPixelsToMoveThisFrame) < 0)                       // We're falling 
+    {
+      set (oneStep) to -1                                          // This will let us move downward one pixel at a time  
+    }
+    else                                                           // We're not jumping or falling
+    {
+      set (oneStep) to 0                                           // This will ensure we don't move vertically this frame
+    }
+  }
+  
+  // Start a sequence where we run our 4-corner probe one pixel up or down at a time
+  if(not(oneStep == 0))                                           // We're either jumping or falling
+  {
+    // Figure out how many pixels to probe for this frame
+    set (stepsRemaining) to abs(verticalPixelsToMoveThisFrame) // Gets us a positive number in the event we're falling
+    repeat until (((stepsRemaining) == 0) or ((hasTouchedCeiling) == true) or ((hasTouchedGround) == true))
+    // Loop through the following code the specified number of times until we hit the ceiling or ground
+    {
+      //savePreviousPosition()                                       // Call the procedure that backs up our existing position in case we need to revert
+      change (y) by (oneStep)                                      // Move one pixel up or down
+      
+      // TOP LEFT
+      set (probeY) to ((y position) + round(hitboxHeight / 2) + 1) // Determines the location 1 pixel outside the top edge of the hitbox
+      set (probeX) to ((x position) - round(hitboxWidth / 2) - 1)  // Determines the location 1 pixel outside the left side of the hitbox 
+      broadcast (moveProbe) and wait                               // Move the probe to where we want it
+      broadcast (probeUp) and wait                                 // Probe for a ceiling
+      
+      // TOP RIGHT
+      change (probeX) by (hitboxWidth + 2)                         // Determines the location 1 pixel outside the right edge of the hitbox
+      broadcast (moveProbe) and wait                               // Move the probe to where we want it
+      broadcast (probeUp) and wait                                 // Probe for a ceiling
+      
+      // BOTTOM RIGHT
+      change (probeY) by (-2 - hitboxHeight)                       // Determines the location 1 pixel outside the bottom edge of the hitbox
+      broadcast (moveProbe) and wait                               // Move the probe to where we want it
+      broadcast (probeDown) and wait                               // Probe for ground
+      
+      // BOTTOM LEFT
+      change (probeX) by (-2 - hitboxWidth)                        // Determines the location 1 pixel outside the left edge of the hitbox
+      broadcast (moveProbe) and wait                               // Move the probe to where we want it
+      broadcast (probeDown) and wait                               // Probe for a floor  
+      
+      change (stepsRemaining) by -1                                // Decrement the step counter so it eventually reaches 0
+      // As long as stepsRemaining is still >0 and we haven't hit the ground or ceiling, this code will repeat
+    }
+  }
+}
+
+define resolveFloorAndCeilingCollisions()
+{
+  // Start by figuring out if there was a vertical collision
+  if (((hasTouchedCeiling) == true) or ((hasTouchedGround) == true)) // Probe touched the ground or ceiling
+  {
+    if (((verticalPixelsToMoveThisFrame) < 0) and ((hasTouchedGround) == true)) // Hitbox landed
+    {
+      set (isStandingOnTheGround) to true                       
+      set (hasBumpedIntoTheCeiling) to false                       // Reset the variable for reuse in the next frame
+      set (hasTouchedGround) to false                              // Reset the variable for reuse in the next frame
+      change (y) by 1                                              // Move up 1 pixel so we're not in the ground
+    }
+    if (verticalPixelsToMoveThisFrame > 0 and (hasTouchedCeiling) == true) // Hitbox hit its head
+    {
+      set (hasBumpedIntoTheCeiling) to true
+      set (hasTouchedCeiling) to false                             // Reset the variable for reuse in the next frame
+      change (y) by -1                                             // Move down 1 pixel so we're not in the ceiling
+    }
+    set (verticalPixelsToMoveThisFrame) to 0                       // Reset this before reusing for the next frame
+  }
+  else                                                             // Hitbox has not landed nor bumped its head
+  {
+    set (isStandingOnTheGround) to false
+    set (hasBumpedIntoTheCeiling) to false
+  }
+}
 
 define updateJumpAndFallFlags()
 {
