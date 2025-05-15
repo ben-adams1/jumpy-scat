@@ -1,6 +1,6 @@
 when I receive (moveCat)
 {
-  go to (hitbox)
+  go to (Hitbox)
 }
 
 when I receive (updateCostume)
@@ -10,18 +10,22 @@ when I receive (updateCostume)
     point in direction (90)                                        // Face right
     animateRunning()
   }
-  else if ((horizontalPixelsToMoveThisFrame) < 0)  
+  else 
   {
-    point in direction (-90)                                       // Face left
-    animateRunning()
+    if ((horizontalPixelsToMoveThisFrame) < 0)  
+    {
+      point in direction (-90)                                       // Face left
+      animateRunning()
+    }
+    else
+    {
+      switch costume to (costume3)
+    }
   }
-  else
-  {
-    switch costume to (costume3)
-  }
+}
 
 define animateRunning()
-  { 
+{ 
   if (costume (number) = 1)
   { 
     switch costume to (costume2)
@@ -33,6 +37,7 @@ define animateRunning()
 }
 
 define animateJumping() // Future
+{
   if (isRising = true)
   {
     switch costume to (costume4)
