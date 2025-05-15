@@ -60,30 +60,30 @@ define initialize()
   set (hasTouchedCeiling) to false                                 // Used for detecting ceilings
   set (hasTouchedWall) to false                                    // Used for detecting walls
   set (hasTouchedDanger) to false                                  // Used for detecting spikes, lava, etc.
-  set (previousFrameXPosition) to (x)                              // Basically starting this out at the origin
-  set (previousFrameYPosition) to (y)                              // Basically starting this out at the origin
+  set (previousFrameXPosition) to (x position)                     // Basically starting this out at the origin
+  set (previousFrameYPosition) to (y position)                     // Basically starting this out at the origin
   broadcast (ghostProbe)                                           // Hide the probe that we use for detecting wall collisions 
                                                                    // since it's not part of our artwork
-  set (ghost) to (100)                                             // Hide the hitbox
-  go to ((x) == (spawnX), (y) == (spawnY))                         // Make the hitbox appear at the spawn origin
+  set (ghost) effect to (100)                                      // Hide the hitbox
+  go to (x: (spawnX), y: (spawnY))                         // Make the hitbox appear at the spawn origin
 }
 
 define readAndProcessPlayerInput()
 {
   // Start by evaluating keypresses for horizontal movement
-  if (((key [left arrow]) == pressed) and ((key [right arrow]) == pressed)) // Treat them as canceling each other out
+  if (((key (left arrow) pressed) or (key (a) pressed)) and ((key (right arrow) pressed) or (key (d) pressed))) // Treat them as canceling each other out
   {
     set (horizontalPixelsToMoveThisFrame) to 0                     // Don't move left or right
   }
   else
   {
-    if (((key [left arrow]) == pressed))
+    if ((key (left arrow) pressed) or (key (a) pressed))
     {
       set (horizontalPixelsToMoveThisFrame) to ((0) - (initialHorizontalMovePixels)) // Set a negative amount to go left
     }
     else
     {
-      if ((key ([right arrow]) == pressed))
+      if ((key (right arrow) pressed) or (key (d) pressed))
       {
         set (horizontalPixelsToMoveThisFrame) to (initialHorizontalMovePixels) // Set a positive amount to go right
       }
@@ -95,18 +95,23 @@ define readAndProcessPlayerInput()
   }
   
   // Now, evaluate keypresses for vertical movement
-  if (((isStandingOnTheGround) = true) and ((key [up arrow]) == pressed)) // Hitbox was standing on ground and up key was pressed
+  if (((isStandingOnTheGround) = true) and ((key (up arrow) pressed) or (key (w) pressed))) // Hitbox was standing on ground and up key was pressed
   {                                                                // This is a legitimate jump request
     set (verticalPixelsToMoveThisFrame) to (initialVerticalJumpPixels) // Set a positive amount to go up
   }
-  else if ((isRising == true) and not((key [up arrow]) == pressed)) // Hitbox is rising, but jump not up key not pressed
-    set (verticalPixelsToMoveThisFrame) to 0
+  else
+  {
+    if ((isRising == true) and not((key (up arrow) pressed) or (key (w) pressed))) // Hitbox is rising, but jump not up key not pressed
+    {
+      set (verticalPixelsToMoveThisFrame) to 0
+    }
+  }
 }
 
 define savePreviousPosition()  
 {  
-  set (savedX) to (x)                                              // Save a backup of where the hitbox was before on the x axis
-  set (savedY) to (y)                                              // Save a backup of where the hitbox was before on the y axis
+  set (savedX) to (x position)                                     // Save a backup of where the hitbox was before on the x axis
+  set (savedY) to (y position)                                     // Save a backup of where the hitbox was before on the y axis
 } 
 
 define moveVerticallyOneStep()  
@@ -121,8 +126,8 @@ define evaluateFloorAndCeilingCollisions()
   set (hasTouchedGround) to false                                  // Reset this from the previous frame
   
   // TOP LEFT
-  set (probeY) to (y + round(hitboxHeight ÷ 2) + 1)                // Determines the location 1 pixel outside the top edge of the hitbox
-  set (probeX) to (x - (round(hitboxWidth ÷ 2)) - 1)               // Determines the location 1 pixel outside the left side of the hitbox 
+  set (probeY) to ((y position) + round(hitboxHeight / 2) + 1)                // Determines the location 1 pixel outside the top edge of the hitbox
+  set (probeX) to ((x position) - (round(hitboxWidth / 2)) - 1)               // Determines the location 1 pixel outside the left side of the hitbox 
   broadcast (moveProbe) and wait                                   // Move the probe to where we want it
   broadcast (probeUp) and wait                                     // Probe for a ceiling
   
@@ -147,17 +152,16 @@ define resolveFloorAndCeilingCollisions()
   // If the probe touched the ground or ceiling, undo the vertical movement
   if (((hasTouchedCeiling) == true) or ((hasTouchedGround) == true)) // Probe touched the ground or ceiling
   {
-    set (y) to (savedY)                                            // Revert the hitbox to its previous vertical position
+    set y to (savedY)                                              // Revert the hitbox to its previous vertical position
     if (((verticalPixelsToMoveThisFrame) < 0) and ((hasTouchedGround) == true)) // Hitbox landed
     {
       set (isStandingOnTheGround) to true                       
       set (hasBumpedIntoTheCeiling) to false                       // Reset the variable for reuse in the next frame
       set (hasTouchedGround) to false                              // Reset the variable for reuse in the next frame
     }
-    if (verticalPixelsToMoveThisFrame > 0 and hasTouchedCeiling = true) // Hitbox hit its head
+    if (verticalPixelsToMoveThisFrame > 0 and (hasTouchedCeiling) == true) // Hitbox hit its head
     {
       set (hasBumpedIntoTheCeiling) to true
-      set (isStandingOnTheGround) to false                         // Reset the variable for reuse in the next frame
       set (hasTouchedCeiling) to false                             // Reset the variable for reuse in the next frame
     }
     set (verticalPixelsToMoveThisFrame) to 0                       // Reset this before reusing for the next frame
@@ -174,9 +178,9 @@ define applyGravityToVerticalSpeed()
   if ((isStandingOnTheGround) == false)
   {
     change (verticalPixelsToMoveThisFrame) by (0 - (pixelsToFallEachFrame)) // In preparation for the next frame,
-                                                                     // update the distance to move the hitbox vertically 
-                                                                     // next time, either slowing a jump, or increasing
-                                                                     // fall speed
+                                                                   // update the distance to move the hitbox vertically 
+                                                                   // next time, either slowing a jump, or increasing
+                                                                   // fall speed
     if ((verticalPixelsToMoveThisFrame) < (0 - (maxPixelsToFallPerFrame))) // Hitbox is falling too fast
     {
       set (verticalPixelsToMoveThisFrame) to (0 - (maxPixelsToFallPerFrame)) // Cap the fall speed
@@ -191,7 +195,7 @@ define applyGravityToVerticalSpeed()
 define updateJumpAndFallFlags()
 {
   // Determine whether hitbox is rising
-  if ((y) > (previousFrameYPosition))                              // Hitbox is higher than before
+  if ((y position) > (previousFrameYPosition))                     // Hitbox is higher than before
   {
     set (isRising) to true
     set (isFalling) to false
@@ -200,7 +204,7 @@ define updateJumpAndFallFlags()
   else                                                             // Hitbox is not higher than before
   {
     // Determine whether hitbox is falling or stationary
-    if ((y) < (previousFrameYPosition))                            // Hitbox is lower than before
+    if ((y position) < (previousFrameYPosition))                   // Hitbox is lower than before
     {
       set (isRising) to false
       set (isFalling) to true
@@ -220,7 +224,7 @@ define updateJumpAndFallFlags()
       }
     }
   }
-  set (previousFrameYPosition) to (y)                              // For use in the next frame
+  set (previousFrameYPosition) to (y position)                     // For use in the next frame
 }
 
 define moveHorizontallyOneStep()  
@@ -235,16 +239,16 @@ define evaluateAndResolveWallCollisions()
   if (not((horizontalPixelsToMoveThisFrame) == 0))                 // Hitbox is trying to move horizontally 
   {
     // Determine where to put the probe on the X axis and save the results in variables that we will execute on in a bit
-    set (probeX) to ((x) - round((hitboxWidth) ÷ 2) - 1)           // This puts the probe sprite just outside the left edge
+    set (probeX) to ((x position) - round((hitboxWidth) / 2) - 1)  // This puts the probe sprite just outside the left edge
                                                                    // of the hitbox
                                                                    // (Half the distance from the center of the hitbox)
     if ((horizontalPixelsToMoveThisFrame) > 0)                     // Hitbox is trying to go to the right
     {
-      change (probeX) by round(hitboxWidth + 2)                    // Move probe to just outside the right edge of hitbox
+      change (probeX) by ((hitboxWidth) + 2)                       // Move probe to just outside the right edge of hitbox
     }
 
     // Determine where to put the probe on the bottom of the hitbox
-    set (probeY) to ((y) - round(hitboxHeight ÷ 2))                // This will put the probe at the bottom of the hitbox
+    set (probeY) to ((y position) - round(hitboxHeight / 2))       // This will put the probe at the bottom of the hitbox
 
     // Now that we know where to put the probe, execute the probe movement
     broadcast (moveProbe) and wait                                 // Move the probe sprite to where we want it
