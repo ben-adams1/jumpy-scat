@@ -1,11 +1,11 @@
 when I receive (ghostProbe)
   {
-    set (ghost) to (100)                                       // Hide the probe
+    set ghost effect to (100)                                       // Hide the probe
   }
 
 when I receive (moveProbe)
 {
-  go to ((x) == (probeX), (y) == (probeY))
+  go to (x: (probeX), y: (probeY))
 }
 
 when I receive (probeUp)
