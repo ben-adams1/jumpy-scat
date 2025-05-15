@@ -7,7 +7,6 @@ when (Green_Flag == clicked)
     readAndProcessPlayerInput()
     applyGravityToVerticalSpeed()
     moveAndEvaluateFloorAndCeilingCollisions()
-    resolveFloorAndCeilingCollisions()
     updateJumpAndFallFlags()
     moveHorizontallyOneStep()
     evaluateAndResolveWallCollisions()
@@ -128,9 +127,6 @@ define applyGravityToVerticalSpeed()
 define moveAndEvaluateFloorAndCeilingCollisions()
 {
   // Determine where to put the probe on the X axis (in case we need it)
-  set (hasTouchedCeiling) to false                                 // Reset this from the previous frame
-  set (hasTouchedGround) to false                                  // Reset this from the previous frame
-  
   // Set our steps to be positive (jumping) or negative (falling)
   if ((verticalPixelsToMoveThisFrame) > 0)                         // We're jumping
   {
@@ -149,14 +145,16 @@ define moveAndEvaluateFloorAndCeilingCollisions()
   }
   
   // Start a sequence where we run our 4-corner probe one pixel up or down at a time
-  if(not(oneStep == 0))                                           // We're either jumping or falling
+  if(not(oneStep == 0))                                            // We're either jumping or falling
   {
     // Figure out how many pixels to probe for this frame
-    set (stepsRemaining) to abs(verticalPixelsToMoveThisFrame) // Gets us a positive number in the event we're falling
-    repeat until (((stepsRemaining) == 0) or ((hasTouchedCeiling) == true) or ((hasTouchedGround) == true))
+    set (stepsRemaining) to abs(verticalPixelsToMoveThisFrame)     // Gets us a positive number in the event we're falling
+    set (hasTouchedCeiling) to false                               // Reset this from the previous frame
+    set (hasTouchedGround) to false                                // Reset this from the previous frame
+    repeat until (((stepsRemaining) < 1) or ((hasTouchedCeiling) == true) or ((hasTouchedGround) == true))
     // Loop through the following code the specified number of times until we hit the ceiling or ground
     {
-      //savePreviousPosition()                                       // Call the procedure that backs up our existing position in case we need to revert
+      //savePreviousPosition()                                     // Call the procedure that backs up our existing position in case we need to revert
       change (y) by (oneStep)                                      // Move one pixel up or down
       
       // TOP LEFT
@@ -180,6 +178,7 @@ define moveAndEvaluateFloorAndCeilingCollisions()
       broadcast (moveProbe) and wait                               // Move the probe to where we want it
       broadcast (probeDown) and wait                               // Probe for a floor  
       
+      resolveFloorAndCeilingCollisions()
       change (stepsRemaining) by -1                                // Decrement the step counter so it eventually reaches 0
       // As long as stepsRemaining is still >0 and we haven't hit the ground or ceiling, this code will repeat
     }
@@ -205,6 +204,7 @@ define resolveFloorAndCeilingCollisions()
       change (y) by -1                                             // Move down 1 pixel so we're not in the ceiling
     }
     set (verticalPixelsToMoveThisFrame) to 0                       // Reset this before reusing for the next frame
+    set (stepsRemaining) to 0
   }
   else                                                             // Hitbox has not landed nor bumped its head
   {
