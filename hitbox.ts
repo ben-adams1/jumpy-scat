@@ -9,7 +9,6 @@ when (Green_Flag == clicked)
     moveAndEvaluateFloorAndCeilingCollisions()
     updateJumpAndFallFlags()
     moveAndEvaluateAndWallCollisions()
-    renderCharacter()
     wait (0) seconds
   }
 }
@@ -23,17 +22,17 @@ define initialize()
                                                                    // which is above the ground, so it will start falling
   set (hitboxWidth) to 75                                          // Hitbox width
   set (hitboxHeight) to 66                                         // Hitbox height  
-  set (initialHorizontalMovePixels) to 5                           // Move the hitbox this many pixels horizontally when 
+  set (initialHorizontalMovePixels) to  (round((hitBoxHeight) / 4)) // Move the hitbox this many pixels horizontally when 
                                                                    // left or right key is pressed
                                                                    // this value can be modified later in the code to speed 
                                                                    // it up or slow it down
                                                                    // but this is the base amount, also known as moveSpeed
-  set (initialVerticalJumpPixels) to 10                            // Move the hitbox this many pixels vertically when up 
+  set (initialVerticalJumpPixels) to ((hitBoxHeight) * 3)          // Move the hitbox this many pixels vertically when up 
                                                                    // key is pressed.
                                                                    // This value can be modified later in the code to speed 
                                                                    // it up or slow it down.
                                                                    // but this is the base amount, also known as jumpSpeed
-  set (pixelsToFallEachFrame) to 1                                 // Move the hitbox this many pixels vertically when 
+  set (pixelsToFallEachFrame) to  (round((hitBoxHeight) / 4))      // Move the hitbox this many pixels vertically when 
                                                                    // falling. 
                                                                    // Also slow down rises by this many pixels when jumping.
                                                                    // This value can be modified later in the code to 
@@ -45,8 +44,8 @@ define initialize()
                                                                    // or if the sprite was crouched and tried to stand up 
                                                                    // in a short cave/tunnel
   set (isRising) to false                                          // Tracks hitbox state of jumping
-  set (isFalling) to false                                         // Tracks hitbox state of falling
-  set (isAtPeakOfJump) to true                                     // Tracks hitbox state of being at top of jump, about to 
+  set (isFalling) to true                                          // Tracks hitbox state of falling
+  set (isAtPeakOfJump) to false                                    // Tracks hitbox state of being at top of jump, about to 
                                                                    // start falling
   set (horizontalPixelsToMoveThisFrame) to 0                       // Initialize this as 0 since it just started
   set (verticalPixelsToMoveThisFrame) to 0                         // Initialize this as 0 since it just started  
@@ -180,6 +179,7 @@ define moveAndEvaluateFloorAndCeilingCollisions()
       change (stepsRemaining) by -1                                // Decrement the step counter so it eventually reaches 0
       // As long as stepsRemaining is still >0 and we haven't hit the ground or ceiling, this code will repeat
       resolveFloorAndCeilingCollisions()
+	  renderCharacter()
     }
   }
 }
@@ -296,6 +296,7 @@ define moveAndEvaluateAndWallCollisions()
       change (stepsRemaining) by -1                                // Decrement the step counter so it eventually reaches 0
       // As long as stepsRemaining is still >0 and we haven't hit the ground or ceiling, this code will repeat
       resolveWallCollisions()
+	  renderCharacter()
     }
   }
 }
