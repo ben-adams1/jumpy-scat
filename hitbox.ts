@@ -129,12 +129,66 @@ define moveAndEvaluateFloorAndCeilingCollisions()
   if ((verticalPixelsToMoveThisFrame) > 0)                         // We're jumping
   {
     set (oneStep) to 1                                             // This will let us move upward one pixel at a time
+	
+	// Figure out how many pixels to probe for this frame
+    set (stepsRemaining) to (verticalPixelsToMoveThisFrame)
+    
+	set (hasTouchedCeiling) to false                               // Reset this from the previous frame
+    
+	repeat until (((stepsRemaining) == 0) or ((hasTouchedCeiling) == true))
+    // Loop through the following code the specified number of times until we hit the ceiling or the top of our jump
+    {
+      change (y) by (oneStep)                                      // Move one pixel up
+      
+      // TOP LEFT
+      set (probeY) to ((y position) + round(hitboxHeight / 2) + 1) // Determines the location 1 pixel above the top edge of the hitbox
+      set (probeX) to ((x position) - round(hitboxWidth / 2) - 1)  // Determines the location 1 pixel outside the left side of the hitbox 
+      broadcast (moveProbe) and wait                               // Move the probe to where we want it
+      broadcast (probeUp) and wait                                 // Probe for a ceiling
+      
+      // TOP RIGHT
+      change (probeX) by (hitboxWidth + 2)                         // Determines the location 1 pixel outside the right edge of the hitbox
+      broadcast (moveProbe) and wait                               // Move the probe to where we want it
+      broadcast (probeUp) and wait                                 // Probe for a ceiling
+      
+      change (stepsRemaining) by -1                                // Decrement the step counter so it eventually reaches 0
+      // As long as stepsRemaining is still >0 and we haven't hit the ground or ceiling, this code will repeat
+      resolveFloorAndCeilingCollisions()
+	  renderCharacter()
+    }
   }
   else                                                             // We're not jumping
   {
     if ((verticalPixelsToMoveThisFrame) < 0)                       // We're falling 
     {
       set (oneStep) to -1                                          // This will let us move downward one pixel at a time  
+	  
+	  // Figure out how many pixels to probe for this frame
+      set (stepsRemaining) to abs(verticalPixelsToMoveThisFrame)     // Gets us a positive number in the event we're falling
+      
+	  set (hasTouchedGround) to false                                // Reset this from the previous frame
+      
+      repeat until (((stepsRemaining) == 0) or ((hasTouchedGround) == true))
+      // Loop through the following code the specified number of times until we hit the ceiling or the top of our jump
+      {
+        change (y) by (oneStep)                                      // Move one pixel down
+      
+        // BOTTOM LEFT
+        set (probeY) to ((y position) - round(hitboxHeight / 2) - 1) // Determines the location 1 pixel below the bottom edge of the hitbox
+        set (probeX) to ((x position) - round(hitboxWidth / 2) - 1)  // Determines the location 1 pixel outside the left side of the hitbox 
+        broadcast (moveProbe) and wait                               // Move the probe to where we want it
+        broadcast (probeDown) and wait                                 // Probe for a ceiling
+        
+        // BOTTOM RIGHT
+        change (probeX) by (hitboxWidth + 2)                         // Determines the location 1 pixel outside the right edge of the hitbox
+        broadcast (moveProbe) and wait                               // Move the probe to where we want it
+        broadcast (probeDown) and wait                                 // Probe for a ceiling
+        
+        change (stepsRemaining) by -1                                // Decrement the step counter so it eventually reaches 0
+        // As long as stepsRemaining is still >0 and we haven't hit the ground or ceiling, this code will repeat
+        resolveFloorAndCeilingCollisions()
+	    renderCharacter()
+      }
     }
     else                                                           // We're not jumping or falling
     {
@@ -145,42 +199,7 @@ define moveAndEvaluateFloorAndCeilingCollisions()
   // Start a sequence where we run our 4-corner probe one pixel up or down at a time
   if(not(oneStep == 0))                                            // We're either jumping or falling
   {
-    // Figure out how many pixels to probe for this frame
-    set (stepsRemaining) to abs(verticalPixelsToMoveThisFrame)     // Gets us a positive number in the event we're falling
-    set (hasTouchedCeiling) to false                               // Reset this from the previous frame
-    set (hasTouchedGround) to false                                // Reset this from the previous frame
-    repeat until (((stepsRemaining) == 0) or ((hasTouchedCeiling) == true) or ((hasTouchedGround) == true))
-    // Loop through the following code the specified number of times until we hit the ceiling or ground
-    {
-      //savePreviousPosition()                                     // Call the procedure that backs up our existing position in case we need to revert
-      change (y) by (oneStep)                                      // Move one pixel up or down
-      
-      // TOP LEFT
-      set (probeY) to ((y position) + round(hitboxHeight / 2) + 1) // Determines the location 1 pixel outside the top edge of the hitbox
-      set (probeX) to ((x position) - round(hitboxWidth / 2) - 1)  // Determines the location 1 pixel outside the left side of the hitbox 
-      broadcast (moveProbe) and wait                               // Move the probe to where we want it
-      broadcast (probeUp) and wait                                 // Probe for a ceiling
-      
-      // TOP RIGHT
-      change (probeX) by (hitboxWidth + 2)                         // Determines the location 1 pixel outside the right edge of the hitbox
-      broadcast (moveProbe) and wait                               // Move the probe to where we want it
-      broadcast (probeUp) and wait                                 // Probe for a ceiling
-      
-      // BOTTOM RIGHT
-      change (probeY) by (-2 - hitboxHeight)                       // Determines the location 1 pixel outside the bottom edge of the hitbox
-      broadcast (moveProbe) and wait                               // Move the probe to where we want it
-      broadcast (probeDown) and wait                               // Probe for ground
-      
-      // BOTTOM LEFT
-      change (probeX) by (-2 - hitboxWidth)                        // Determines the location 1 pixel outside the left edge of the hitbox
-      broadcast (moveProbe) and wait                               // Move the probe to where we want it
-      broadcast (probeDown) and wait                               // Probe for a floor  
-      
-      change (stepsRemaining) by -1                                // Decrement the step counter so it eventually reaches 0
-      // As long as stepsRemaining is still >0 and we haven't hit the ground or ceiling, this code will repeat
-      resolveFloorAndCeilingCollisions()
-	  renderCharacter()
-    }
+    
   }
 }
 
