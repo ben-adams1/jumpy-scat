@@ -8,8 +8,7 @@ when (Green_Flag == clicked)
     applyGravityToVerticalSpeed()
     moveAndEvaluateFloorAndCeilingCollisions()
     updateJumpAndFallFlags()
-    moveHorizontallyOneStep()
-    evaluateAndResolveWallCollisions()
+    moveAndEvaluateAndWallCollisions()
     renderCharacter()
     wait (0) seconds
   }
@@ -151,7 +150,7 @@ define moveAndEvaluateFloorAndCeilingCollisions()
     set (stepsRemaining) to abs(verticalPixelsToMoveThisFrame)     // Gets us a positive number in the event we're falling
     set (hasTouchedCeiling) to false                               // Reset this from the previous frame
     set (hasTouchedGround) to false                                // Reset this from the previous frame
-    repeat until (((stepsRemaining) < 1) or ((hasTouchedCeiling) == true) or ((hasTouchedGround) == true))
+    repeat until (((stepsRemaining) == 0) or ((hasTouchedCeiling) == true) or ((hasTouchedGround) == true))
     // Loop through the following code the specified number of times until we hit the ceiling or ground
     {
       //savePreviousPosition()                                     // Call the procedure that backs up our existing position in case we need to revert
@@ -178,9 +177,9 @@ define moveAndEvaluateFloorAndCeilingCollisions()
       broadcast (moveProbe) and wait                               // Move the probe to where we want it
       broadcast (probeDown) and wait                               // Probe for a floor  
       
-      resolveFloorAndCeilingCollisions()
       change (stepsRemaining) by -1                                // Decrement the step counter so it eventually reaches 0
       // As long as stepsRemaining is still >0 and we haven't hit the ground or ceiling, this code will repeat
+      resolveFloorAndCeilingCollisions()
     }
   }
 }
@@ -248,53 +247,76 @@ define updateJumpAndFallFlags()
   set (previousFrameYPosition) to (y position)                     // For use in the next frame
 }
 
-define moveHorizontallyOneStep()  
-{  
-  change (x) by (horizontalPixelsToMoveThisFrame)                  // Move the hitbox left or right
-}  
-
-define evaluateAndResolveWallCollisions()  
+define moveAndEvaluateAndWallCollisions()  
 {
-  set (hasTouchedWall) to false                                    // Make sure this is reset from the previous frame
-  // First, determine whether the hitbox is trying to move horizontally
-  if (not((horizontalPixelsToMoveThisFrame) == 0))                 // Hitbox is trying to move horizontally 
+  if ((horizontalPixelsToMoveThisFrame) > 0))                      // Hitbox is trying to move to the right
   {
     // Determine where to put the probe on the X axis and save the results in variables that we will execute on in a bit
-    set (probeX) to ((x position) - round((hitboxWidth) / 2) - 1)  // This puts the probe sprite just outside the left edge
-                                                                   // of the hitbox
-                                                                   // (Half the distance from the center of the hitbox)
-    if ((horizontalPixelsToMoveThisFrame) > 0)                     // Hitbox is trying to go to the right
+    set (oneStep) to 1    	
+  }
+  else
+  {
+    if ((horizontalPixelsToMoveThisFrame) < 0)                     // Hitbox is trying to move to the left
     {
-      change (probeX) by ((hitboxWidth) + 2)                       // Move probe to just outside the right edge of hitbox
+      set (oneStep) to -1 
     }
-
-    // Determine where to put the probe on the bottom of the hitbox
-    set (probeY) to ((y position) - round(hitboxHeight / 2))       // This will put the probe at the bottom of the hitbox
-
-    // Now that we know where to put the probe, execute the probe movement
-    broadcast (moveProbe) and wait                                 // Move the probe sprite to where we want it
-    broadcast (probeSideways) and wait                             // Determine whether the probe is touching a wall
-    
-    // Determine whether the probe is touching a wall and if so, revert the action
-    if ((hasTouchedWall) = true)                                   // The probe is in a wall
+    else
     {
-      set (x) to (savedX)                                          // Revert the hitbox to its previous horizontal position
-      set (horizontalPixelsToMoveThisFrame) to 0                   // Reset this variable to 0 for use in the next frame
+      set (oneStep) to 0
     }
-	
-    // Determine where to put the probe on the top of the hitbox
-    change (probeY) by (hitboxHeight)                              // This will put the probe at the top of the hitbox
-
-    // Now that we know where to put the probe, execute the probe movement
-    broadcast (moveProbe) and wait                                 // Move the probe sprite to where we want it
-    broadcast (probeSideways) and wait                             // Determine whether the probe is touching a wall
-
-    // Determine whether the probe is touching a wall and if so, revert the action
-    if ((hasTouchedWall) = true)                                   // The probe is in a wall
+  }
+  if (not((oneStep) == 0))
+  {
+    set (stepsRemaining) to abs(horizontalPixelsToMoveThisFrame)
+    set (hasTouchedWall) to false                                  // Reset for use in this instance
+    repeat until (((stepsRemaining) == 0) or ((hasTouchedWall) == 0))
     {
-      set (x) to (savedX)                                          // Revert the hitbox to its previous horizontal position
-      set (horizontalPixelsToMoveThisFrame) to 0                   // Reset this variable to 0 for use in the next frame
-    }	
+      change (x) by (oneStep)
+      // TOP LEFT
+      set (probeY) to ((y position) + round(hitboxHeight / 2) + 1) // Determines the location 1 pixel outside the top edge of the hitbox
+      set (probeX) to ((x position) - round(hitboxWidth / 2) - 1)  // Determines the location 1 pixel outside the left side of the hitbox 
+      broadcast (moveProbe) and wait                               // Move the probe to where we want it
+      broadcast (probeSideways) and wait                           // Probe for a ceiling
+      
+      // TOP RIGHT
+      change (probeX) by (hitboxWidth + 2)                         // Determines the location 1 pixel outside the right edge of the hitbox
+      broadcast (moveProbe) and wait                               // Move the probe to where we want it
+      broadcast (probeSideways) and wait                           // Probe for a ceiling
+      
+      // BOTTOM RIGHT
+      change (probeY) by (-2 - hitboxHeight)                       // Determines the location 1 pixel outside the bottom edge of the hitbox
+      broadcast (moveProbe) and wait                               // Move the probe to where we want it
+      broadcast (probeSideways) and wait                           // Probe for ground
+      
+      // BOTTOM LEFT
+      change (probeX) by (-2 - hitboxWidth)                        // Determines the location 1 pixel outside the left edge of the hitbox
+      broadcast (moveProbe) and wait                               // Move the probe to where we want it
+      broadcast (probeSideways) and wait                           // Probe for a floor  
+      
+      change (stepsRemaining) by -1                                // Decrement the step counter so it eventually reaches 0
+      // As long as stepsRemaining is still >0 and we haven't hit the ground or ceiling, this code will repeat
+      resolveWallCollisions()
+    }
+  }
+}
+
+define resolveWallCollisions()
+{
+  if((hasTouchedWall) == true)
+  {
+    if((horizontalPixelsToMoveThisFrame) > 0)
+    {
+      change (x) by -1
+    }
+    else
+    {
+      if((horizontalPixelsToMoveThisFrame) < 0)
+      {
+        change (x) by -1
+      }
+    }
+    set (horiztonalPixelsToMoveThisFrame) to 0
+    set (stepsRemaining) to 0
   }
 }
 
